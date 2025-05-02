@@ -1,0 +1,49 @@
+name: Update Cask
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version of the app'
+        required: true
+      sha256:
+        description: 'SHA256 checksum of the app'
+        required: true
+      cask_name:
+        description: 'Name of the cask'
+        required: true
+  repository_dispatch:
+    types: [bump-bee-away-cask]
+
+jobs:
+  bump:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+      actions: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tap the homebrew-tap repo
+        run: |
+          brew untap ragarwalll/tap || true
+          brew tap ragarwalll/tap https://github.com/ragarwalll/homebrew-tap.git
+
+      - name: Turn on developer mode
+        run: brew developer on
+
+      - name: Bump Cask
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.TAP_DISPATCH_TOKEN }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          brew bump-cask-pr \
+            --no-audit \
+            --version=${{ github.event.client_payload.version }} \
+            --sha256=${{ github.event.client_payload.sha256 }} \
+            --url="https://github.com/ragarwalll/bee-away/releases/download/v${{ github.event.client_payload.version }}/BeeAway-v${{ github.event.client_payload.version }}.dmg" \
+            ${{ github.event.client_payload.cask_name }}
