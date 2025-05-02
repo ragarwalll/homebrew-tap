@@ -7,7 +7,7 @@ This repository hosts the Homebrew Cask for published releases by [Rahul Agarwal
 1. Tap this repository:
 
    ```bash
-   brew tap ragarwalll/tap
+   brew tap ragarwalll/homebrew-tap
    ```
 
 2. Install BeeAway:
